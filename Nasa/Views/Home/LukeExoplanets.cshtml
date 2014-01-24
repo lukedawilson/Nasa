@@ -1,0 +1,35 @@
+﻿@section head{
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+   <script type="text/javascript">
+
+      function renderChart(data) {
+         var dataTable = new window.google.visualization.DataTable();
+         dataTable.addColumn('string', 'Planet');
+         dataTable.addColumn('number', 'Distance from Sol / parsec');
+
+         var planets = JSON.parse(data).response.results;
+         planets.forEach(function(planet) {
+            dataTable.addRow([planet.name, planet.star.distance]);
+         });
+
+         var chartOptions = {
+            'title': 'Distance from Sol of habitable exoplanets',
+            'width': 800,
+            'height': 400
+         };
+
+         var chart = new window.google.visualization.BarChart($('#exoApi')[0]);
+         chart.draw(dataTable, chartOptions);
+      }
+
+      google.load('visualization', '1.0', { 'packages': ['corechart'] });
+      google.setOnLoadCallback(function() {
+         $.ajax({
+            url: "@Url.Action("HttpRequestSync", new {url = "http://exoapi.com/api/skyhook/planets/search?habitable=1"})"
+         }).success(renderChart);
+      });
+   </script>
+}
+
+<div id="exoApi"></div>

@@ -1,0 +1,37 @@
+﻿@section head{
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+   <script type="text/javascript">
+
+      function renderChart(data) {
+         var json = JSON.parse(data);
+
+         var dataTable = new window.google.visualization.DataTable();
+         dataTable.addColumn('number', 'Sol');
+         dataTable.addColumn('number', 'Celsius');
+
+         var readings = json.results;
+
+         readings.forEach(function (sol) {
+            dataTable.addRow([sol.sol, sol.min_temp]);
+         });
+
+         var options = {
+            title: 'Mars Temperatures',
+            hAxis: { title: 'Sol', titleTextStyle: { color: 'red' } }
+         };
+
+         var chart = new google.visualization.ColumnChart(document.getElementById('maas'));
+         chart.draw(dataTable, options);
+      }
+
+      google.load('visualization', '1.0', { 'packages': ['corechart'] });
+      google.setOnLoadCallback(function() {
+         $.ajax({
+            url: "@Url.Action("HttpRequestSync", new { url = "http://marsweather.ingenology.com/v1/archive/" })"
+         }).success(renderChart);
+      });
+   </script>
+}
+
+<div id="maas"></div>

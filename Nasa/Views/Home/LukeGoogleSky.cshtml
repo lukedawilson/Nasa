@@ -1,0 +1,72 @@
+﻿@section head{
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+   <script type="text/javascript">
+
+      function renderMapAndPlanets(data, ge) {
+         ge.getWindow().setVisibility(false);
+         ge.getOptions().setMapType(ge.MAP_TYPE_SKY);
+         setTimeout(function() { // If this isn't done asynchronously, the pin functionality breaks
+            var lookAt;
+            
+            var planets = JSON.parse(data).response.results;
+            planets.forEach(function(planet) {
+               var star = planet.star;
+               if (typeof star.declination != "string" || typeof star.rightascension != "string")
+                  return;
+
+               var latitude = getDegrees(star.declination);
+               var longitude = getDegrees(star.rightascension);
+
+               // Create location object
+               lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+               lookAt.setLatitude(latitude);
+               lookAt.setLongitude(longitude);
+
+               // Create pin
+               var placemark = ge.createPlacemark('');
+               placemark.setName(planet.name);
+               ge.getFeatures().appendChild(placemark);
+
+               var point = ge.createPoint('');
+               point.setLatitude(lookAt.getLatitude());
+               point.setLongitude(lookAt.getLongitude());
+               placemark.setGeometry(point);
+               
+               // Create and add icon
+               var icon = ge.createIcon('');
+               icon.setHref('http://game-icons.net/icons/lorc/originals/png/ringed-planet.png');
+               var style = ge.createStyle('');
+               style.getIconStyle().setIcon(icon);
+               placemark.setStyleSelector(style);
+            });
+            
+            // Zoom to last planet
+            ge.getWindow().setVisibility(true);
+            ge.getView().setAbstractView(lookAt);
+         }, 500);
+      }
+
+      function getDegrees(dms) {
+         var arr = dms.split(" ");
+         var days = parseFloat(arr[0]);
+         var mins = parseFloat(arr[1]);
+         var secs = parseFloat(arr[2]);
+
+         var degrees = days + mins / 60 + secs / (60 * 60);
+         return degrees;
+      }
+
+      google.load("earth", "1", { "other_params": "sensor=false" });
+      google.setOnLoadCallback(function() {
+         google.earth.createInstance('googleEarth', function(ge) {
+            $.ajax({
+               url: "@Url.Action("HttpRequestSync", new {url = "http://exoapi.com/api/planets/all?fields=[name,star.rightascension,star.declination]"})"
+            }).success(function(data) {
+               renderMapAndPlanets(data, ge);
+            });
+         });
+      });
+   </script>
+}
+
+<div id="googleEarth"></div>

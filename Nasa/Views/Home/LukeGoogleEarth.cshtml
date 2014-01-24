@@ -1,0 +1,71 @@
+﻿@section head{
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+   <script type="text/javascript">
+
+      function renderGoogleEarthMap(latitude, longitude, ge) {
+         ge.getWindow().setVisibility(true);
+         ge.getOptions().setMapType(ge.MAP_TYPE_EARTH);
+
+         // Create location object
+         var lookAt = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+         lookAt.setLatitude(latitude);
+         lookAt.setLongitude(longitude);
+
+         // Zoom to point
+         ge.getView().setAbstractView(lookAt);
+      }
+
+      function addPin(ge) {
+         // Create and add placemark
+         var placemark = ge.createPlacemark('');
+         placemark.setName("International Space Station");
+         ge.getFeatures().appendChild(placemark);
+
+         // Create and add icon
+         var icon = ge.createIcon('');
+         icon.setHref('http://icon.downv.com/32x32/5/394/1196603.891ea57c45143d46f175d87e8951cfb8.gif');
+         var style = ge.createStyle('');
+         style.getIconStyle().setIcon(icon);
+         style.getIconStyle().setScale(5.0);
+         placemark.setStyleSelector(style);
+
+         // Create and add point
+         var point = ge.createPoint('');
+         placemark.setGeometry(point);
+
+         return point;
+      }
+
+      function updatePinPosition(latitude, longitude, point) {
+
+         point.setLatitude(latitude);
+         point.setLongitude(longitude);
+      }
+
+      function poll(ge, point) {
+         $.ajax({
+            url: "@Url.Action("HttpRequestSync", new {url = "http://api.open-notify.org/iss-now.json"})"
+         }).success(function(data) {
+            var issPosition = JSON.parse(data).iss_position;
+            var latitude = issPosition.latitude;
+            var longitude = issPosition.longitude;
+
+            updatePinPosition(latitude, longitude, point);
+            renderGoogleEarthMap(latitude, longitude, ge);
+         });
+      }
+
+      google.load("earth", "1", { "other_params": "sensor=false" });
+      google.setOnLoadCallback(function() {
+         google.earth.createInstance('googleEarth', function(ge) {
+            ge.getOptions().setFlyToSpeed(0.2);
+            var point = addPin(ge);
+
+            poll(ge, point);
+            setInterval(function() { poll(ge, point); }, 5000);
+         });
+      });
+   </script>
+}
+
+<div id="googleEarth"></div>

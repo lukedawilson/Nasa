@@ -1,0 +1,41 @@
+﻿@section head{
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+   <script type="text/javascript">
+
+      function renderChart(dataJson) {
+         console.log(dataJson);
+         var data = JSON.parse(dataJson);
+         var dataTable = new window.google.visualization.DataTable();
+         dataTable.addColumn('string', 'Planet');
+         dataTable.addColumn('number', 'Distance');
+         dataTable.addColumn('number', 'Mass');
+         dataTable.addColumn('number', 'Radius');
+
+         var planets = data.response.results;
+         planets.forEach(function (planet) {
+            dataTable.addRow([planet.name, planet.star.distance, planet.mass, planet.radius]);
+         });
+
+         var options = {
+            title: 'Nah',
+            vAxis: { title: "-" },
+            hAxis: { title: "Planet" },
+            seriesType: "bars",
+            series: { 6: { type: "line" } }
+         };
+
+         var chart = new window.google.visualization.ComboChart($('#exoApi')[0]);
+         chart.draw(dataTable, options);
+      }
+
+      google.load('visualization', '1.0', { 'packages': ['corechart'] });
+      google.setOnLoadCallback(function() {
+         $.ajax({
+            url: "@Url.Action("HttpRequestSync", new { url = "http://exoapi.com/api/skyhook/planets/search?habitable=1" })"
+         }).success(renderChart);
+      });
+   </script>
+}
+
+<div id="exoApi"></div>
