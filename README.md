@@ -1,6 +1,9 @@
 # Nasa
 Takes two NASA datasets (the International Space Station location, and exoplanet data),
-and overlays them on Google Earth and Google Sky, respectively; written in C#/ASP.NET
+and overlays them on Google Earth and Google Sky, respectively; written in C#/ASP.NET.
+
+This was based on an interactive session given as part of Trayport's internal employee
+tech talk series.
 
 ## Mars weather API
 
@@ -10,7 +13,7 @@ http://marsweather.ingenology.com/ (e.g. http://marsweather.ingenology.com/v1/ar
 
 http://exoapi.com/ (e.g.  http://exoapi.com/api/skyhook/planets/search?habitable=1)
 
-##ISS location API
+## ISS location API
 
 http://open-notify.org/Open-Notify-API/ISS-Location-Now/ (e.g. http://api.open-notify.org/iss-now.json)
 
